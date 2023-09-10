@@ -10,19 +10,67 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers
+
+  const user = users.find((user) => user.username === username)
+
+  if(!user) {
+    return response.status(404).json({ error: "Username alredy exist"})
+  }
+
+  request.user = user
+
+  return next()
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request
+
+  if (user.pro == false && user.todos.length >= 9) {
+    return response.status(403).json({ error: "Purchase the pro plan"})
+  }
+
+  next()
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers
+  const { id } = request.params
+
+  if(!validate(id)) {
+    return response.status(400).json({ error: "Id format is not allowed!"})
+  }
+
+  const userExists = users.find((user) => user.username === username)
+
+  if (!userExists) {
+    return response.status(404).json({ error: "Username not exist!"})
+  }
+  
+  const todo = userExists.todos.find((todo) => todo.id === id)
+  
+  if (!todo) {
+    return response.status(404).json({ error: "Todo not exist!"})
+  }
+
+  request.todo = todo
+  request.user = userExists
+
+  next()
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params
+
+  const userExists = users.find((user) => user.id === id)
+
+  if (!userExists) {
+    return response.status(404).json({ error: "This id does not belong to any user"})
+  }
+
+    request.user = userExists
+    next()
+  
 }
 
 app.post('/users', (request, response) => {
